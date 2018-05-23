@@ -1,0 +1,89 @@
+#!/bin/bash
+
+p=
+group_name=
+user_name=
+user_pw=
+system_info_file=Informacje
+delay_time=3
+opcja=7
+userid=$(id -u)
+
+user=$(whoami)
+echo $user
+
+function system_info
+{
+if test -e $system_info_file; then rm $system_info_file
+echo Usuniecie istniejacego pliku system_info_file
+sleep $delay_time
+echo Tworzenie pliku system_info_file
+sleep $delay_time
+fi
+echo -e "***Informacje o systemie***\nZalogowany uzytkownik : $USER\nKatalog domowy : $HOME\nInformacje o pamieci:\n$(free)\nCalkowita przestrzen na dysku:\n$(df)\nPrzestrzen katalogu domowego uzytkownika:\n$(du -sh $HOME)\n" >$system_info_file
+sleep $delay_time
+echo Zapisano informacje o systemie
+read -p "Wcisnij dowolny klawisz aby kontynuowac..." -n1 -s
+clear
+}
+
+function print
+{
+if test -e !$system_info_file; then echo Plik nie istnieje
+else cat $system_info_file
+read -p "Wcisnij dowolny klawisz aby kontynuowac..." -n1 -s
+clear
+fi
+}
+
+function create_group
+{
+echo Podaj nazwe grupy
+read group_name
+addgroup $group_name
+clear
+read -p "Grupa zostala utworzona. Nacisnij dowolny klawisz aby kontynuowac..." -n1 -s
+clear
+}
+
+function create_user
+{
+echo Podaj nazwe uzytkownika
+read user_name
+if test -e $user_name; then read -p "Nazwa uzytkownika zajeta! Wcisnij dowolny klawisz aby kontynuowac..." -n1 -s
+clear
+else useradd $user_name read -p "Uzytkownik zostal utworzony. Wcisnij dowolny klawisz aby kontynuowac..." -n1 -s
+passwd $user_name
+clear
+fi
+}
+
+function download_file
+{
+wget -P ~/repository http://corecontrol.cba.pl/linuxlab.tar 
+}
+
+until [ "$opcja" -eq "0" ]; do
+echo 1 - Zbierz informacje o systemie
+echo 2 - Wyswietl zapisane informacje
+if [ "$user" = "root" ]; then
+echo 3 - Utworz grupe
+echo 4 - Utworz uzytkownika
+fi
+echo 5 - Pobierz i przetworz plik
+echo 6 - Wyszukaj frazy w plikach
+echo 0 - Opuszczenie skryptu
+read opcja
+clear
+
+case $opcja in
+"1")system_info;;
+"2")print;;
+"3")create_group;;
+"4")create_user;;
+"5")download_file;;
+"0")break;;
+*)echo Prosze podac odpowiedni numerek;;
+esac
+done
+exit
